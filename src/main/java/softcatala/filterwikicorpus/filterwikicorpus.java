@@ -34,7 +34,7 @@ public class filterwikicorpus {
 
   public static void main(String[] args) throws Exception {
     if (args.length != 2) {
-      System.err.println("Use: java -jar filtercorpus.jar json_files_path ouputfile");
+      System.err.println("Use: java -jar filterwikicorpus.jar json_files_path ouputfile");
       System.exit(1);
     }
     String pathstr = args[0];
