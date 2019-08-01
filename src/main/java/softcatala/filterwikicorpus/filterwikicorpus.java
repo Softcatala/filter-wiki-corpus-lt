@@ -32,10 +32,9 @@ public class filterwikicorpus {
   private static final Pattern INVALID_SENTENCE = Pattern
       .compile(".*([0-9]|[A-Z]\\.|art\\.|núm\\.|[A-ZÀÈÉÍÒÓÚ][A-ZÀÈÉÍÒÓÚ]|[\\(\\)\\[\\]śźń:]).*");
 
-  //
   public static void main(String[] args) throws Exception {
     if (args.length != 2) {
-      System.err.println("Ús: java -jar filtercorpus.jar json_files_path ouputfile");
+      System.err.println("Use: java -jar filtercorpus.jar json_files_path ouputfile");
       System.exit(1);
     }
     String pathstr = args[0];
