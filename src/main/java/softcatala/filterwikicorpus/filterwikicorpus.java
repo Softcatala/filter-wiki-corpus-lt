@@ -1,5 +1,8 @@
 package softcatala.filterwikicorpus;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -7,18 +10,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.languagetool.JLanguageTool;
-import org.languagetool.Language;
-import org.languagetool.language.Catalan;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import org.languagetool.JLanguageTool;
+import org.languagetool.Language;
+import org.languagetool.ResultCache;
+import org.languagetool.UserConfig;
+import org.languagetool.language.Catalan;
 
 public class filterwikicorpus {
   public filterwikicorpus() {
@@ -27,10 +29,12 @@ public class filterwikicorpus {
   private static Language lang = new Catalan();
   private static int SENTENCE_CHAR_MAX_SIZE = 115;
   private static int SENTENCE_CHAR_MIN_SIZE = 12;
-  private static JLanguageTool langTool = new JLanguageTool(new Catalan());
   private static final Pattern VALID_SENTENCE = Pattern.compile("^[«»]?[A-ZÀÈÉÍÒÓÚ].+[\\.!?]$");
   private static final Pattern INVALID_SENTENCE = Pattern
       .compile(".*([0-9]|[A-Z]\\.|art\\.|núm\\.|[A-ZÀÈÉÍÒÓÚ][A-ZÀÈÉÍÒÓÚ]|[\\(\\)\\[\\]śźń:]).*");
+  static ResultCache cache = null;
+  static UserConfig userConfig = new UserConfig(new ArrayList<>(), new HashMap<>(), -1);
+  private static JLanguageTool langTool = new JLanguageTool(new Catalan(), cache, userConfig);
 
   public static void main(String[] args) throws Exception {
     if (args.length != 2) {
@@ -67,8 +71,7 @@ public class filterwikicorpus {
             String str = s.trim();
             if (str.startsWith("--"))
               str = str.substring(2);
-            if (str.startsWith("-") || str.startsWith("—") 
-                || str.startsWith("–") || str.startsWith("»")) {
+            if (str.startsWith("-") || str.startsWith("—") || str.startsWith("–") || str.startsWith("»")) {
               str = str.substring(1);
             }
             str = s.trim();
