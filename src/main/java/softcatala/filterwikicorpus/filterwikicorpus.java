@@ -33,66 +33,105 @@ public class filterwikicorpus {
   private static final Pattern INVALID_SENTENCE = Pattern
       .compile(".*([0-9]|[A-Z]\\.|art\\.|núm\\.|[A-ZÀÈÉÍÒÓÚ][A-ZÀÈÉÍÒÓÚ]|[\\(\\)\\[\\]śźń:]).*");
   static ResultCache cache = null;
-  static UserConfig userConfig = new UserConfig(new ArrayList<>(), new HashMap<>(), -1);
+  static UserConfig userConfig = new UserConfig(new ArrayList<String>(), new HashMap<String, Integer>(), -1);
   private static JLanguageTool langTool = new JLanguageTool(new Catalan(), cache, userConfig);
 
   public static void main(String[] args) throws Exception {
-    if (args.length != 2) {
-      System.err.println("Use: java -jar filterwikicorpus.jar json_files_path ouputfile");
+    if (args.length != 3) {
+      System.err.println("Use: java -jar filterwikicorpus.jar --json json_files_path ouputfile");
+      System.err.println("Use: java -jar filterwikicorpus.jar --txt text_inputfile ouputfile");
       System.exit(1);
     }
-    String pathstr = args[0];
-    String outputFilename = args[1];
+    String option = args [0];
+    String outputFilename = args[2];
 
     PrintWriter out = new PrintWriter(outputFilename);
-
-    JSONParser parser = new JSONParser();
-    Path rootDir = Paths.get(pathstr);
-    List<String> allfiles;
-    allfiles = getFileNames(new ArrayList<String>(), rootDir);
-
-    List<String> allsentences = new ArrayList<String>();
-
+    
     langTool.disableRules(Arrays.asList("EXIGEIX_VERBS_CENTRAL", "EXIGEIX_ACCENTUACIO_GENERAL", "EXIGEIX_POSSESSIUS_V",
-        "EVITA_PRONOMS_VALENCIANS", "EVITA_DEMOSTRATIUS_EIXE", "VOCABULARI_VALENCIA", "EXIGEIX_US"));
+        "EVITA_PRONOMS_VALENCIANS", "EVITA_DEMOSTRATIUS_EIXE", "VOCABULARI_VALENCIA", "EXIGEIX_US" 
+        ,"SER_ESSER", "WHITESPACE_RULE"
+        ));
 
-    for (String inputFilename : allfiles) {
-      try (BufferedReader br = new BufferedReader(new FileReader(inputFilename))) {
-        String line;
-        while ((line = br.readLine()) != null) {
-          // process the line.
-          Object obj = parser.parse(line);
-          JSONObject jsonObject = (JSONObject) obj;
-          String text = (String) jsonObject.get("text");
+    if (option.equals("--json")) {
+      String pathstr = args[1];
+      JSONParser parser = new JSONParser();
+      Path rootDir = Paths.get(pathstr);
+      List<String> allfiles;
+      allfiles = getFileNames(new ArrayList<String>(), rootDir);
+      List<String> allsentences = new ArrayList<String>();
+      for (String inputFilename : allfiles) {
+        try (BufferedReader br = new BufferedReader(new FileReader(inputFilename))) {
+          String line;
+          while ((line = br.readLine()) != null) {
+            // process the line.
+            Object obj = parser.parse(line);
+            JSONObject jsonObject = (JSONObject) obj;
+            String text = (String) jsonObject.get("text");
 
-          List<String> sentences = lang.getSentenceTokenizer().tokenize(text);
-          int numSentences = 0;
-          for (String s : sentences) {
-            String str = s.trim();
-            if (str.startsWith("--"))
-              str = str.substring(2);
-            if (str.startsWith("-") || str.startsWith("—") || str.startsWith("–") || str.startsWith("»")) {
-              str = str.substring(1);
+            List<String> sentences = lang.getSentenceTokenizer().tokenize(text);
+            int numSentences = 0;
+            for (String s : sentences) {
+              String str = s.trim();
+              if (str.startsWith("--"))
+                str = str.substring(2);
+              if (str.startsWith("-") || str.startsWith("—") || str.startsWith("–") || str.startsWith("»")) {
+                str = str.substring(1);
+              }
+              str = s.trim();
+              if (allsentences.contains(str)) {
+                continue;
+              }
+              if ((str.length() > SENTENCE_CHAR_MIN_SIZE) && (str.length() < SENTENCE_CHAR_MAX_SIZE)
+                  && (!str.endsWith("...")) && (VALID_SENTENCE.matcher(str).matches())
+                  && (!INVALID_SENTENCE.matcher(str).matches()) && (langTool.check(str).isEmpty())) {
+                out.println(str);
+                allsentences.add(str);
+                numSentences++;
+              }
+              if (numSentences == 3) {
+                break;
+              }
             }
-            str = s.trim();
-            if (allsentences.contains(str)) {
-              continue;
-            }
-            if ((str.length() > SENTENCE_CHAR_MIN_SIZE) && (str.length() < SENTENCE_CHAR_MAX_SIZE)
-                && (!str.endsWith("...")) && (VALID_SENTENCE.matcher(str).matches())
-                && (!INVALID_SENTENCE.matcher(str).matches()) && (langTool.check(str).isEmpty())) {
-              out.println(str);
-              allsentences.add(str);
-              numSentences++;
-            }
-            if (numSentences == 3) {
-              break;
-            }
+            // out.println("** " + (String) jsonObject.get("title")+": "+numSentences);
           }
-          // out.println("** " + (String) jsonObject.get("title")+": "+numSentences);
         }
       }
     }
+    
+    if (option.equals("--txt")) {
+        String inputFilename = args[1];
+        List<String> allsentences = new ArrayList<String>();
+        try (BufferedReader br = new BufferedReader(new FileReader(inputFilename))) {
+          String line;
+          while ((line = br.readLine()) != null) {
+            List<String> sentences = lang.getSentenceTokenizer().tokenize(line);
+            for (String s : sentences) {
+              String str = s.trim();
+              /*if (str.startsWith("--"))
+                str = str.substring(2);
+              if (str.startsWith("-") || str.startsWith("—") || str.startsWith("–") || str.startsWith("»")) {
+                str = str.substring(1);
+              }*/
+              str = s.trim();
+              if (allsentences.contains(str)) {
+                System.err.println(str);
+                continue;
+              }
+              if ( /*(str.length() > SENTENCE_CHAR_MIN_SIZE) && (str.length() < SENTENCE_CHAR_MAX_SIZE)
+                  && (!str.endsWith("...")) && (VALID_SENTENCE.matcher(str).matches())
+                  && (!INVALID_SENTENCE.matcher(str).matches()) &&*/ (langTool.check(str).isEmpty())) {
+                out.println(str);
+                allsentences.add(str);
+
+              } else {
+                System.err.println(str);
+              }
+            }
+          }
+        }
+
+    }
+    
     out.close();
   }
 
