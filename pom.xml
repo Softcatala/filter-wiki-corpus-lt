@@ -26,12 +26,12 @@
 	<dependency>
       <groupId>org.languagetool</groupId>
 	  <artifactId>languagetool-core</artifactId>
-      <version>4.7-SNAPSHOT</version>
+      <version>5.4</version>
 	</dependency>
 	<dependency>
       <groupId>org.languagetool</groupId>
 	  <artifactId>language-ca</artifactId>
-      <version>4.7-SNAPSHOT</version>
+      <version>5.4</version>
 	</dependency>
 	<dependency>
 	    <groupId>com.googlecode.json-simple</groupId>

@@ -49,7 +49,7 @@ public class filterwikicorpus {
     
     langTool.disableRules(Arrays.asList("EXIGEIX_VERBS_CENTRAL", "EXIGEIX_ACCENTUACIO_GENERAL", "EXIGEIX_POSSESSIUS_V",
         "EVITA_PRONOMS_VALENCIANS", "EVITA_DEMOSTRATIUS_EIXE", "VOCABULARI_VALENCIA", "EXIGEIX_US" 
-        ,"SER_ESSER", "WHITESPACE_RULE"
+        ,"SER_ESSER", "WHITESPACE_RULE", "CA_SIMPLEREPLACE_DIACRITICS_IEC"
         ));
 
     if (option.equals("--json")) {
