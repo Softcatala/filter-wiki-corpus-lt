@@ -33,7 +33,7 @@ public class filterwikicorpus {
   private static final Pattern INVALID_SENTENCE = Pattern
       .compile(".*([0-9]|[A-Z]\\.|art\\.|núm\\.|[A-ZÀÈÉÍÒÓÚ][A-ZÀÈÉÍÒÓÚ]|[\\(\\)\\[\\]śźń:]).*");
   static ResultCache cache = null;
-  static UserConfig userConfig = new UserConfig(new ArrayList<String>(), new HashMap<String, Integer>(), -1);
+  static UserConfig userConfig = new UserConfig(new ArrayList<String>(), new HashMap<String, Integer>());
   private static JLanguageTool langTool = new JLanguageTool(new Catalan(), cache, userConfig);
 
   public static void main(String[] args) throws Exception {
